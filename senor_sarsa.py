@@ -72,6 +72,8 @@ end = False
 while (not end):
     #E(s,a) = 0, for all s in S, a in A(s)
     E = {(1,1) : {dirc : {a : 0 for a in range(nA)} for dirc in range(4)}}
+    for adloc in Q:
+        E[adloc] = {dirc : {a : 0 for a in range(nA)} for dirc in range(4)}
 
     #Initialze S,A
     loc = env.agent_start_pos
@@ -84,7 +86,7 @@ while (not end):
     done = False #Terminal
     lmbd = 0.9   #Lambda
 
-    while((not done) or (steps > 1000)):
+    while((not done) or (steps > 300)):
         #Action Picker acc to ε-greedy
         A = np.random.randint(0,3)
         ε = 1/steps
@@ -110,12 +112,10 @@ while (not end):
         E[loc][dire][A] = E[loc][dire][A] + 1
 
         #Update Q with backward view, Reduce the Eligibility Traces, Get the new Policy
-        print(Q)
         for sloc in Q: #Sweep_loc
             for sdire in Q[sloc]: #Sweep_direction
                 mA = Pol[sloc][sdire] #Max_Action
                 for sA in Q[sloc][sdire]: #Sweep_Action
-                    print(sloc,sdire,sA,Q[sloc][sdire][sA],E[sloc][sdire][sA])
                     Q[sloc][sdire][sA] = Q[sloc][sdire][sA] + (α*targe*E[sloc][sdire][sA])
                     E[sloc][sdire][sA] = gamma*lmbd*E[sloc][sdire][sA]
                     mA = sA if (Q[sloc][sdire][sA] > Q[sloc][sdire][mA]) else mA
@@ -127,8 +127,8 @@ while (not end):
         steps = steps + 1
 
     attempts = attempts + 1
-    end = True if (attempts > 100) else False #Loop Terminator/Number of Episodes dial
-    
+    end = True if (attempts > 1000) else False #Loop Terminator/Number of Episodes dial
+    print(env.agent_pos)
     env.reset()
     print(env.agent_pos)
 
