@@ -79,7 +79,8 @@ while (not end):
     while(not done):
         #Action Picker acc to ε-greedy
         A = np.random.randint(0,7)
-        A = Pol[loc][dire] if (np.random.random_sample() > (1/steps)) else A
+        ε = 0.8 if attempt < 10 else (1/attempt)
+        A = Pol[loc][dire] if (np.random.random_sample() > (ε)) else A
 
         Obs,R,done,INFO = step(A)
         nloc = (env.agent_pos[0], env.agent_pos[1])
@@ -105,7 +106,7 @@ while (not end):
                 Pol[sloc][sdire] = mA
         loc = nloc
         dire = ndire
-    end = True if (attempt > 10000) else False
+    end = True if (attempt > 100) else False
     attempt = attempt + 1
     #if (attempt%1000 == 0):
     #    print(attempt)
