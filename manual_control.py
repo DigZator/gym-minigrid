@@ -7,6 +7,8 @@ import gym
 import gym_minigrid
 from gym_minigrid.wrappers import *
 from gym_minigrid.window import Window
+import matplotlib
+matplotlib.use('TkAgg')
 
 def redraw(img):
     if not args.agent_view:

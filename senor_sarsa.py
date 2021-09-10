@@ -5,16 +5,16 @@ import argparse
 import numpy as np
 import gym
 import gym_minigrid
-import matplotlib
 from gym_minigrid.wrappers import *
 from gym_minigrid.window import Window
 from gym_minigrid.register import env_list
-
+import matplotlib
+#matplotlib.use('TkAgg')
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--env",
     help="gym environment to load",
-    default='MiniGrid-Empty-6x6-v0'
+    default='MiniGrid-Empty-8x8-v0'
 )
 parser.add_argument(
     "--seed",
@@ -34,7 +34,7 @@ parser.add_argument(
     help="draw the agent sees (partially observable view)",
     action='store_true'
 )
-
+ 
 args = parser.parse_args()
 
 env = gym.make(args.env)
@@ -50,8 +50,10 @@ def step(action):
 #nA = 7
 nA = 3
 
+env.reset()
+
 #Initialize Q(s,a) arbitrarily, for all s in S, a in A(s)
-Q = {(1,1) : {dirc : {a : 0 for a in range(3)} for dirc in range(4)}}
+Q = {(env.agent_pos[0],env.agent_pos[1]) : {dirc : {a : 0 for a in range(nA)} for dirc in range(4)}}
 #Q[(1,2)] = {dirc : {a : 0 for a in range(7)} for dirc in range(4)} - How to add key to a dictionary
 #Q: Loc: Dir: A: (Q)
 
@@ -64,20 +66,20 @@ Q = {(1,1) : {dirc : {a : 0 for a in range(3)} for dirc in range(4)}}
 #done = 6
 
 #Initialized policy
-Pol = {(1,1) : {dirc : 0 for dirc in range(4)}}
+Pol = {(env.agent_pos[0],env.agent_pos[1]): {dirc : 0 for dirc in range(4)}}
 
 #Repeat (for each episode)
 attempts = 0 #Episode counter
 end = False
 while (not end):
     #E(s,a) = 0, for all s in S, a in A(s)
-    E = {(1,1) : {dirc : {a : 0 for a in range(nA)} for dirc in range(4)}}
+    E = {(env.agent_pos[0],env.agent_pos[1]) : {dirc : {a : 0 for a in range(nA)} for dirc in range(4)}}
     for adloc in Q:
         E[adloc] = {dirc : {a : 0 for a in range(nA)} for dirc in range(4)}
 
     #Initialze S,A
-    loc = env.agent_start_pos
-    dire = env.agent_start_dir
+    loc = (env.agent_pos[0],env.agent_pos[1])
+    dire = env.agent_dir
     A = 0
 
     steps  = 1   #Step counter
@@ -88,8 +90,11 @@ while (not end):
 
     while((not done) or (steps > 300)):
         #Action Picker acc to ε-greedy
-        A = np.random.randint(0,3)
-        ε = 1/steps
+        A = np.random.randint(0,nA)
+        ε = 1/(attempts+1)
+        #print(Pol, loc, dire)
+        if Pol.get(loc) is None:
+            Pol[loc] = {dirc : 0 for dirc in range(4)}
         A = Pol[loc][dire] if (np.random.random_sample() > (ε)) else A
 
         #Observe R, S'
@@ -127,10 +132,23 @@ while (not end):
         steps = steps + 1
 
     attempts = attempts + 1
+    print(attempts)
     end = True if (attempts > 1000) else False #Loop Terminator/Number of Episodes dial
-    print(env.agent_pos)
+    #print(env.agent_pos)
     env.reset()
-    print(env.agent_pos)
+    #print(env.agent_pos)
 
-print(Q,"\n",Pol)
-#render(env)
+#print(Q,"\n",Pol)
+#print(env)
+env.reset()
+print(env)
+done = False
+
+while (not done):
+    loc = (env.agent_pos[0],env.agent_pos[1])
+    dire = env.agent_dir
+    #print(loc,dire,Pol[loc][dire])
+    A = (Pol[loc][dire])
+    obs,R,done,info=step(A)
+    print(env, "\n")
+#env.render()
