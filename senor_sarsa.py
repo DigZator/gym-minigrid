@@ -89,6 +89,8 @@ while (not end):
     lmbd = 0.9   #Lambda
 
     while((not done) or (steps > 300)):
+        #if ((attempts == 1) or (attempts == 10) or (attempts == 100) or (attempts == 500)):
+        #    env.render()
         #Action Picker acc to ε-greedy
         A = np.random.randint(0,nA)
         ε = 1/(attempts+1)
@@ -145,6 +147,7 @@ print(env)
 done = False
 
 while (not done):
+    env.render()
     loc = (env.agent_pos[0],env.agent_pos[1])
     dire = env.agent_dir
     #print(loc,dire,Pol[loc][dire])
