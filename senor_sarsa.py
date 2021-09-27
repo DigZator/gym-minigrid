@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--env",
     help="gym environment to load",
-    default='MiniGrid-Empty-8x8-v0'
+    default='MiniGrid-FourRooms-v0'#MiniGrid-Empty-16x16-v0,MiniGrid-FourRooms-v0
 )
 parser.add_argument(
     "--seed",
@@ -88,12 +88,14 @@ while (not end):
     done = False #Terminal
     lmbd = 0.9   #Lambda
 
-    while((not done) or (steps > 300)):
-        #if ((attempts == 1) or (attempts == 10) or (attempts == 100) or (attempts == 500)):
+    while((not done)):
+        #if ((attempts == 100) or (attempts == 100) or (attempts == 500) or (attempts == 500)):
         #    env.render()
         #Action Picker acc to ε-greedy
         A = np.random.randint(0,nA)
-        ε = 1/(attempts+1)
+        ε = 100/((attempts)+100)
+        #if (attempts < 50):
+        #    ε = 0.8
         #print(Pol, loc, dire)
         if Pol.get(loc) is None:
             Pol[loc] = {dirc : 0 for dirc in range(4)}
@@ -101,10 +103,13 @@ while (not end):
 
         #Observe R, S'
         Obs,R,done,info = step(A)
+        #R = -0.1 if (R == 0) else R
         nloc = (env.agent_pos[0], env.agent_pos[1])
         ndire = env.agent_dir
 
         #Add state if it doesn't exist
+        if Q.get(loc) is None:
+            Q[loc] = {dirc : {a : 0 for a in range(nA)} for dirc in range(4)}
         if Q.get(nloc) is None:
             Q[nloc] = {dirc : {a : 0 for a in range(nA)} for dirc in range(4)}
         if E.get(nloc) is None:
@@ -134,14 +139,13 @@ while (not end):
         steps = steps + 1
 
     attempts = attempts + 1
-    print(attempts)
+    print(attempts, steps)
+    print
     end = True if (attempts > 1000) else False #Loop Terminator/Number of Episodes dial
     #print(env.agent_pos)
     env.reset()
     #print(env.agent_pos)
 
-#print(Q,"\n",Pol)
-#print(env)
 env.reset()
 print(env)
 done = False
@@ -150,7 +154,6 @@ while (not done):
     env.render()
     loc = (env.agent_pos[0],env.agent_pos[1])
     dire = env.agent_dir
-    #print(loc,dire,Pol[loc][dire])
     A = (Pol[loc][dire])
     obs,R,done,info=step(A)
     print(env, "\n")
