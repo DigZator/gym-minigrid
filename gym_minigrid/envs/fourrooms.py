@@ -14,7 +14,7 @@ class FourRoomsEnv(MiniGridEnv):
     def __init__(self, agent_pos=None, goal_pos=None):
         self._agent_default_pos = agent_pos
         self._goal_default_pos = goal_pos
-        super().__init__(grid_size=19, max_steps=100)
+        super().__init__(grid_size=19, max_steps=1000)
 
     def _gen_grid(self, width, height):
         # Create the grid
@@ -25,6 +25,8 @@ class FourRoomsEnv(MiniGridEnv):
         self.grid.horz_wall(0, height - 1)
         self.grid.vert_wall(0, 0)
         self.grid.vert_wall(width - 1, 0)
+        self._goal_default_pos = (13,13)
+        self._agent_default_pos = (5,5)
 
         room_w = width // 2
         room_h = height // 2
@@ -43,12 +45,14 @@ class FourRoomsEnv(MiniGridEnv):
                 if i + 1 < 2:
                     self.grid.vert_wall(xR, yT, room_h)
                     pos = (xR, self._rand_int(yT + 1, yB))
+                    pos = (xR, yT + 5 )
                     self.grid.set(*pos, None)
 
                 # Bottom wall and door
                 if j + 1 < 2:
                     self.grid.horz_wall(xL, yB, room_w)
                     pos = (self._rand_int(xL + 1, xR), yB)
+                    pos = (xL + 2 , yB)
                     self.grid.set(*pos, None)
 
         # Randomize the player start position and orientation
