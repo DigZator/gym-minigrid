@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--env",
     help="gym environment to load",
-    default='MiniGrid-FourRooms-v0'#MiniGrid-Empty-16x16-v0,MiniGrid-FourRooms-v0
+    default='MiniGrid-FourRooms-v0'#MiniGrid-Empty-8x8-v0,MiniGrid-FourRooms-v0
 )
 parser.add_argument(
     "--seed",
@@ -71,6 +71,8 @@ Pol = {(env.agent_pos[0],env.agent_pos[1]): {dirc : 0 for dirc in range(4)}}
 #Repeat (for each episode)
 attempts = 0 #Episode counter
 end = False
+n_attempts = 1000
+n_steps = 1000
 while (not end):
     #E(s,a) = 0, for all s in S, a in A(s)
     E = {(env.agent_pos[0],env.agent_pos[1]) : {dirc : {a : 0 for a in range(nA)} for dirc in range(4)}}
@@ -83,13 +85,13 @@ while (not end):
     A = 0
 
     steps  = 1   #Step counter
-    α = 0.35     #Step size
+    α = 0.3      #Step size
     gamma = 0.9  #Discount Factor
     done = False #Terminal
     lmbd = 0.9   #Lambda
 
-    while((not done)):
-        #if ((attempts == 100) or (attempts == 100) or (attempts == 500) or (attempts == 500)):
+    while((not done) and (steps < n_steps)):
+        #if ((attempts == 1) or (attempts == 100) or (attempts == 500) or (attempts == 500)):
         #    env.render()
         #Action Picker acc to ε-greedy
         A = np.random.randint(0,nA)
@@ -140,21 +142,29 @@ while (not end):
 
     attempts = attempts + 1
     print(attempts, steps)
-    print
-    end = True if (attempts > 1000) else False #Loop Terminator/Number of Episodes dial
+    end = True if (attempts > n_attempts) else False #Loop Terminator/Number of Episodes dial
+    #n_steps = steps
     #print(env.agent_pos)
     env.reset()
     #print(env.agent_pos)
 
-env.reset()
-print(env)
-done = False
+#env.reset()
+#done = False
+steps_taken = [0]*100
+for i in range(100):
+    stepin = 0
+    env.reset()
+    done = False
+    while (not done):
+        #env.render()
+        loc = (env.agent_pos[0],env.agent_pos[1])
+        dire = env.agent_dir
+        A = (Pol[loc][dire])
+        obs,R,done,info=step(A)
+        stepin = stepin + 1
+        #print(env, "\n")
+    steps_taken[i] = stepin
 
-while (not done):
-    env.render()
-    loc = (env.agent_pos[0],env.agent_pos[1])
-    dire = env.agent_dir
-    A = (Pol[loc][dire])
-    obs,R,done,info=step(A)
-    print(env, "\n")
+print(steps_taken)
+
 #env.render()
